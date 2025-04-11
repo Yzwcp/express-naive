@@ -40,6 +40,7 @@ export default defineConfig({
 		['auto-bg', 'bg-white dark:bg-dark'],
 		['auto-bg-hover', 'hover:bg-#eaf0f1 hover:dark:bg-#1b2429'],
 		['auto-bg-highlight', 'bg-#eaf0f1 dark:bg-#1b2429'],
+		['text-hide-over', 'text-ellipsis overflow-hidden   whitespace-nowrap'],
 		['text-highlight', 'rounded-4 px-8 py-2 auto-bg-highlight']
 	],
 	rules: [['card-shadow', { 'box-shadow': '0 1px 2px -2px #00000029, 0 3px 6px #0000001f, 0 5px 12px 4px #00000017' }]],

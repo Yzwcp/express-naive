@@ -18,7 +18,9 @@ export default {
 	// 切换当前角色
 	switchCurrentRole: (role) => request.post(`/auth/current-role/switch/${role}`),
 	// 获取角色权限
-	getRolePermissions: () => request.get('/permission/getTreeMenuByRole'),
+	getRolePermissions: () => request.get('/sys/permission/getTreeMenuByRole'),
 	// 验证菜单路径
-	validateMenuPath: (path) => request.get(`/permission/menu/validate?path=${path}`)
+	validateMenuPath: (path) => request.get(`/sys/permission/menu/validate?path=${path}`),
+	//获取文件列表
+	getFileList: (params) => request.get('/file', { params })
 }
