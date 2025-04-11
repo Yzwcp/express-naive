@@ -1,10 +1,10 @@
 /**********************************
  * @FilePath: helpers.js
- * @Author: Ronnie Zhang
- * @LastEditor: Ronnie Zhang
+ * @Author:
+ * @LastEditor:
  * @LastEditTime: 2023/12/04 22:46:22
- * @Email: zclzone@outlook.com
- * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
+ * @Email:
+ *
  **********************************/
 
 import { useAuthStore } from '@/store'

@@ -1,26 +1,26 @@
 /**********************************
- * @Author: Ronnie Zhang
- * @LastEditor: Ronnie Zhang
+ * @Author:
+ * @LastEditor:
  * @LastEditTime: 2023/12/05 21:23:01
- * @Email: zclzone@outlook.com
- * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
+ * @Email:
+ *
  **********************************/
 
 import { router } from '@/router'
 import { withDirectives } from 'vue'
 
 const permission = {
-  mounted(el, binding) {
-    const currentRoute = unref(router.currentRoute)
-    const btns = currentRoute.meta?.btns?.map(item => item.code) || []
-    if (!btns.includes(binding.value)) {
-      el.remove()
-    }
-  },
+	mounted(el, binding) {
+		const currentRoute = unref(router.currentRoute)
+		const btns = currentRoute.meta?.btns?.map((item) => item.code) || []
+		if (!btns.includes(binding.value)) {
+			el.remove()
+		}
+	}
 }
 
 export function setupDirectives(app) {
-  app.directive('permission', permission)
+	app.directive('permission', permission)
 }
 
 /**
@@ -34,5 +34,5 @@ export function setupDirectives(app) {
  *
  */
 export function withPermission(vnode, code) {
-  return withDirectives(vnode, [[permission, code]])
+	return withDirectives(vnode, [[permission, code]])
 }

@@ -1,11 +1,11 @@
 /**********************************
  * @Description: 入口文件
  * @FilePath: main.js
- * @Author: Ronnie Zhang
- * @LastEditor: Ronnie Zhang
+ * @Author:
+ * @LastEditor:
  * @LastEditTime: 2023/12/04 22:41:32
- * @Email: zclzone@outlook.com
- * Copyright © 2023 Ronnie Zhang(大脸怪) | https://isme.top
+ * @Email:
+ *
  **********************************/
 
 import { createApp } from 'vue'
@@ -20,12 +20,12 @@ import '@/styles/global.css'
 import 'uno.css'
 
 async function bootstrap() {
-  const app = createApp(App)
-  setupStore(app)
-  setupDirectives(app)
-  await setupRouter(app)
-  app.mount('#app')
-  setupNaiveDiscreteApi()
+	const app = createApp(App)
+	setupStore(app)
+	setupDirectives(app)
+	await setupRouter(app)
+	app.mount('#app')
+	setupNaiveDiscreteApi()
 }
 
 bootstrap()
