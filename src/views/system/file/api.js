@@ -9,5 +9,7 @@
 import { request } from '@/utils'
 
 export default {
-	upload: (data, options) => request.post('/file/upload', data, options)
+	upload: (data, options) => request.post('/file/upload', data, options),
+	list: (data, options) => request.get('/file', data, options),
+	delete: (id) => request.delete('/file/' + id)
 }

@@ -7,8 +7,7 @@
  --------------------------------->
 
 <template>
-	<n-button @click="showModal = true"></n-button>
-	<n-modal v-model:show="showModal" class="w-1/2" title="文件列表" :mask-closable="false" preset="card">
+	<n-modal v-model:show="showModal" class="w-1/2" title="文件列表" preset="card">
 		<n-space align="center" justify="space-between">
 			<div class="f-c-c gap-x-10">
 				<n-radio-group v-model:value="typeValue">
@@ -25,11 +24,11 @@
 				accept=".png,.jpg,.jpeg"
 				multiple
 				list-type="image"
-				action="http://localhost:3000/file/upload"
+				:action="uploadAction"
 				@before-upload="onBeforeUpload"
 				@finish="handleFinish"
 				:data="{
-					classify: '1'
+					classify: props.classify
 				}"
 				:headers="{
 					Authorization: `Bearer ${authStore.accessToken}`
@@ -84,16 +83,17 @@
 </template>
 
 <script setup>
-import { useClipboard } from '@vueuse/core'
+defineOptions({ name: 'ImgUpload' })
 import { NButton } from 'naive-ui'
 import { useAuthStore } from '@/store/index.js'
 import api from '@/api'
-const authStore = useAuthStore()
-defineOptions({ name: 'ImgUpload' })
-const emit = defineEmits(['onOk'])
-const { copy, copied } = useClipboard()
+const env = import.meta.env
 
-const showModal = ref(true)
+const authStore = useAuthStore()
+const emit = defineEmits(['onOk'])
+//获取环境变量
+const uploadAction = env.VITE_AXIOS_BASE_URL + '/file/upload'
+const showModal = ref(false)
 const loading = ref(false)
 const typeValue = ref('image')
 const selectList = ref([])
@@ -102,29 +102,22 @@ const page = reactive({
 	pageSize: 15,
 	total: 0
 })
-const imgList = ref([
-	{ url: 'https://img.isme.top/isme/67208863145ef.jpg' },
-	{ url: 'https://img.isme.top/isme/67208ab2a9de0.jpg' },
-	{ url: 'https://img.isme.top/isme/67208ab4c6596.jpg' }
-])
+const imgList = ref([])
 const props = defineProps({
 	classify: {
 		type: String,
-		default: '1'
+		default: 'temp'
 	},
 	selectMultiple: {
 		type: Boolean,
 		default: false
 	}
 })
-
 const types = [
 	{ label: '图片', value: 'image' },
 	{ label: '视频', value: 'video' }
 ]
-watch(copied, (val) => {
-	if (val) $message.success('已复制到剪切板')
-})
+
 const onPageChange = () => {
 	loadFileList()
 }
@@ -148,7 +141,10 @@ const loadFileList = async () => {
 	imgList.value = data.pageData
 	page.total = data.total
 }
-loadFileList()
+const open = () => {
+	loadFileList()
+	showModal.value = true
+}
 function onBeforeUpload({ file }) {
 	if (!file.file?.type.startsWith('image/')) {
 		$message.error('只能上传图片')
@@ -172,4 +168,8 @@ async function handleUpload({ file, data, headers, withCredentials, action, onFi
 		onFinish()
 	}, 1500)
 }
+
+defineExpose({
+	open
+})
 </script>

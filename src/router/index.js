@@ -8,6 +8,7 @@
 
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { basicRoutes } from './basic-routes'
+import { callbcak } from './callbcak'
 import { setupRouterGuards } from './guards'
 
 export const router = createRouter({
@@ -15,7 +16,7 @@ export const router = createRouter({
 		import.meta.env.VITE_USE_HASH === 'true'
 			? createWebHashHistory(import.meta.env.VITE_PUBLIC_PATH || '/')
 			: createWebHistory(import.meta.env.VITE_PUBLIC_PATH || '/'),
-	routes: basicRoutes,
+	routes: [...basicRoutes, ...callbcak],
 	scrollBehavior: () => ({ left: 0, top: 0 })
 })
 
