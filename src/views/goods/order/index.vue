@@ -141,6 +141,22 @@ const columns = [
 							type: 'primary',
 							style: 'margin-left: 12px;',
 							disabled: row.code === 'SUPER_ADMIN',
+							onClick: () => handleQueryStatus(row),
+							loading: payLoading.value
+						},
+						{
+							default: () => '查询订单状态',
+							icon: () => h('i', { class: 'i-material-symbols:paid text-14' })
+						}
+					),
+				row.status === '0' &&
+					h(
+						NButton,
+						{
+							size: 'small',
+							type: 'primary',
+							style: 'margin-left: 12px;',
+							disabled: row.code === 'SUPER_ADMIN',
 							onClick: () => handlePay(row),
 							loading: payLoading.value
 						},
@@ -163,23 +179,33 @@ const columns = [
 						icon: () => h('i', { class: 'i-material-symbols:edit-outline text-14' })
 					}
 				),
-				h(
-					NButton,
-					{
-						size: 'small',
-						type: 'error',
-						style: 'margin-left: 12px;',
-						onClick: () => handleDelete(row.id)
-					},
-					{
-						default: () => '删除',
-						icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' })
-					}
-				)
+				row.status === '1' &&
+					h(
+						NButton,
+						{
+							size: 'small',
+							type: 'error',
+							style: 'margin-left: 12px;',
+							onClick: () => handleDelete(row.id)
+						},
+						{
+							default: () => '删除',
+							icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' })
+						}
+					)
 			]
 		}
 	}
 ]
+async function handleQueryStatus(row) {
+	payLoading.value = true
+	try {
+		const { data } = await api.queryAlipayOrder({ id: row.id })
+		$table.value?.handleSearch()
+	} finally {
+		payLoading.value = false
+	}
+}
 async function handlePay(row) {
 	payLoading.value = true
 	try {

@@ -14,5 +14,6 @@ export default {
 	update: (data) => request.put(`/goods/order/${data.id}`, data),
 	delete: (id) => request.delete(`/goods/user/${id}`),
 
-	alipay: (data) => request.post('/goods/order/alipay/page', data)
+	alipay: (data) => request.post('/goods/order/alipay/page', data),
+	queryAlipayOrder: (params) => request.get('/goods/order/alipay/query', { params })
 }
