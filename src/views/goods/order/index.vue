@@ -9,6 +9,7 @@
 <template>
 	<CommonPage>
 		<MeCrud ref="$table" v-model:query-items="queryItems" :scroll-x="1200" :columns="columns" :get-data="api.read">
+		<MeCrud ref="$table" v-model:query-items="queryItems" :scroll-x="1200" :columns="columns" :get-data="api.read">
 			<!--			<MeQueryItem label="名称" :label-width="50">-->
 			<!--				<n-input v-model:value="queryItems.name" type="text" placeholder="请输入名称" clearable />-->
 			<!--			</MeQueryItem>-->
