@@ -9,12 +9,19 @@
 <template>
 	<CommonPage>
 		<template #action>
-			<NButton type="primary" @click="handleAdd()">
+			<NButton type="primary" @click="handleAddRow()">
 				<i class="i-material-symbols:add mr-4 text-18" />
-				添加商品
+				添加日志
 			</NButton>
 		</template>
-		<MeCrud ref="$table" v-model:query-items="queryItems" :scroll-x="1200" :columns="columns" :get-data="api.read">
+		<MeCrud
+			@onDataChange="onDataChange"
+			ref="$table"
+			v-model:query-items="queryItems"
+			:scroll-x="1200"
+			:columns="columns"
+			:get-data="api.read"
+		>
 			<MeQueryItem label="名称" :label-width="50">
 				<n-input v-model:value="queryItems.name" type="text" placeholder="请输入名称" clearable />
 			</MeQueryItem>
@@ -120,7 +127,7 @@ import { CommonPage, MeCrud, MeModal, MeQueryItem } from '@/components/index.js'
 import { useCrud } from '@/composables/index.js'
 import EditRow from '@/views/trade/list/components/EditRow.vue'
 import { withPermission } from '@/directives/index.js'
-import { formatDateTime } from '@/utils/index.js'
+import { dictKey, formatDateTime } from '@/utils/index.js'
 import { NAvatar, NButton, NSwitch, NTag, NImage } from 'naive-ui'
 import { MeUpload } from '@/components/index.js'
 import api from './api.js'
@@ -132,10 +139,26 @@ const $table = ref(null)
 /** QueryBar筛选参数（可选） */
 const queryItems = ref({})
 const imageSpaceRef = ref(null)
-
+const templateRow = ref({
+	code: '',
+	killZone: '',
+	orderLabel: '',
+	orderTime: '',
+	profit: '',
+	risk: '',
+	platform: '',
+	remark: '',
+	status: '',
+	enable: true
+})
 onMounted(() => {
 	$table.value?.handleSearch()
 })
+
+const onEditRow = (row, v, key) => {
+	row.editable = true
+	row[key] = v
+}
 
 const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete, handleOpen, handleEdit, handleSave } =
 	useCrud({
@@ -155,19 +178,108 @@ const columns = [
 		align: 'center',
 		render(row) {
 			return h(EditRow, {
-				value: '2',
-				onValue: (v) => (row.code = v)
+				value: row.code,
+				onChangeValue: (v) => onEditRow(row, v, 'code'),
+				type: 'select',
+				dictKey: dictKey.TRADE_ORDER_CODE
 			})
 		}
 	},
-	{ title: '杀戮区', key: 'killZone', width: 150, ellipsis: { tooltip: true } },
+	{
+		title: '杀戮区',
+		key: 'killZone',
+		width: 100,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.code,
+				onChangeValue: (v) => onEditRow(row, v, 'killZone'),
+				type: 'select',
+				dictKey: dictKey.TRADE_KILL_ZONE
+			})
+		}
+	},
 	{ title: '标签', key: 'orderLabel', width: 150, ellipsis: { tooltip: true } },
-	{ title: '时间', key: 'orderTime', width: 60 },
-	{ title: '盈利', key: 'profit', width: 60 },
-	{ title: '风险', key: 'risk', width: 60 },
-	{ title: '平台', key: 'platform', width: 60 },
-	{ title: '备注', key: 'remark', width: 60 },
-	{ title: '状态', key: 'status', width: 60 },
+	{
+		title: '下单时间',
+		key: 'orderTime',
+		width: 150,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.orderTime,
+				onChangeValue: (v) => onEditRow(row, v, 'orderTime'),
+				type: 'time'
+			})
+		}
+	},
+	{
+		title: '盈利',
+		align: 'center',
+		key: 'profit',
+		width: 60,
+		render(row) {
+			return h(EditRow, {
+				value: row.profit,
+				onChangeValue: (v) => onEditRow(row, v, 'profit'),
+				type: 'input'
+			})
+		}
+	},
+	{
+		title: '风险',
+		key: 'risk',
+		width: 60,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.risk,
+				onChangeValue: (v) => onEditRow(row, v, 'risk'),
+				type: 'input'
+			})
+		}
+	},
+	{
+		title: '平台',
+		key: 'platform',
+		width: 100,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.platform,
+				onChangeValue: (v) => onEditRow(row, v, 'platform'),
+				type: 'select',
+				dictKey: dictKey.TRADE_PLATFORM
+			})
+		}
+	},
+	{
+		title: '备注',
+		key: 'remark',
+		width: 60,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.risk,
+				onChangeValue: (v) => onEditRow(row, v, 'remark'),
+				type: 'input'
+			})
+		}
+	},
+	{
+		title: '状态',
+		key: 'status',
+		width: 100,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.platform,
+				onChangeValue: (v) => onEditRow(row, v, 'status'),
+				type: 'select',
+				dictKey: dictKey.TRADE_ORDER_STATUS
+			})
+		}
+	},
 
 	{
 		title: '创建时间',
@@ -204,33 +316,21 @@ const columns = [
 		hideInExcel: true,
 		render(row) {
 			return [
-				h(
-					NButton,
-					{
-						size: 'small',
-						type: 'primary',
-						style: 'margin-left: 12px;',
-						disabled: row.code === 'SUPER_ADMIN',
-						onClick: () => handleEdit(cloneDeep({ ...row, files: row.files }))
-					},
-					{
-						default: () => '编辑',
-						icon: () => h('i', { class: 'i-material-symbols:edit-outline text-14' })
-					}
-				),
-				h(
-					NButton,
-					{
-						size: 'small',
-						type: 'error',
-						style: 'margin-left: 12px;',
-						onClick: () => handleDelete(row.id)
-					},
-					{
-						default: () => '删除',
-						icon: () => h('i', { class: 'i-material-symbols:delete-outline text-14' })
-					}
-				)
+				row.editable &&
+					h(
+						NButton,
+						{
+							size: 'small',
+							type: 'primary',
+							style: 'margin-left: 12px;',
+							disabled: row.code === 'SUPER_ADMIN',
+							onClick: () => handleEdit(cloneDeep({ ...row, files: row.files }))
+						},
+						{
+							default: () => '保存',
+							icon: () => h('i', { class: 'i-material-symbols:save text-14' })
+						}
+					)
 			]
 		}
 	}
@@ -242,7 +342,9 @@ const getImage = (files) => {
 		modalForm.value.files = files
 	}
 }
-
+function handleAddRow() {
+	$table.value?.tableData.push(cloneDeep(templateRow.value))
+}
 async function handleEnable(row) {
 	row.enableLoading = true
 	try {

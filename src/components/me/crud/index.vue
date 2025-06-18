@@ -200,6 +200,7 @@ function handleExport(columns = props.columns, data = tableData.value) {
 defineExpose({
 	handleSearch,
 	handleReset,
-	handleExport
+	handleExport,
+	tableData
 })
 </script>
