@@ -14,25 +14,17 @@
 				添加日志
 			</NButton>
 		</template>
-		<MeCrud
-			@onDataChange="onDataChange"
-			ref="$table"
-			v-model:query-items="queryItems"
-			:scroll-x="1200"
-			:columns="columns"
-			:get-data="api.read"
-		>
-			<MeQueryItem label="名称" :label-width="50">
-				<n-input v-model:value="queryItems.name" type="text" placeholder="请输入名称" clearable />
-			</MeQueryItem>
-			<MeQueryItem label="状态" :label-width="50">
+		<MeCrud ref="$table" v-model:query-items="queryItems" :scroll-x="1200" :columns="columns" :get-data="api.read">
+			<n-radio-group size="small" v-model:value="queryItems.time" name="radiobuttongroup1">
+				<n-radio-button v-for="song in weekOptions" :key="song.value" :value="song.value" :label="song.label" />
+			</n-radio-group>
+			<MeQueryItem :label-width="50">
 				<n-select
-					v-model:value="queryItems.enable"
+					size="small"
+					class="w-120"
+					v-model:value="queryItems.platform"
 					clearable
-					:options="[
-						{ label: '启用', value: '1' },
-						{ label: '停用', value: '0' }
-					]"
+					:options="dict[dictKey.TRADE_PLATFORM]"
 				/>
 			</MeQueryItem>
 		</MeCrud>
@@ -99,7 +91,7 @@
 						</n-button>
 						<div v-if="modalForm.files?.length" class="flex gap-x-4 w-full card-border">
 							<div v-for="(item, index) in modalForm.files" :key="index" class="text-center flex-col">
-								<n-image :src="item.fullPath" class="m-4 rounded-10 w-60 h-60" width="60" height="60" />
+								<n-image :src="item.fullPath" class="m-4 rounded-10 w-100 h-100" width="100" height="100" />
 								<div>
 									<i @click="modalForm.files.splice(index, 1)" class="i-material-symbols:delete cursor-pointer"></i>
 								</div>
@@ -127,37 +119,48 @@ import { CommonPage, MeCrud, MeModal, MeQueryItem } from '@/components/index.js'
 import { useCrud } from '@/composables/index.js'
 import EditRow from '@/views/trade/list/components/EditRow.vue'
 import { withPermission } from '@/directives/index.js'
-import { dictKey, formatDateTime } from '@/utils/index.js'
+import { dict, dictKey, formatDateTime } from '@/utils/index.js'
 import { NAvatar, NButton, NSwitch, NTag, NImage } from 'naive-ui'
 import { MeUpload } from '@/components/index.js'
 import api from './api.js'
 import { cloneDeep } from 'lodash-es'
 
-defineOptions({ name: 'UserMgt' })
+defineOptions({ name: 'TradeDiary' })
 
 const $table = ref(null)
 /** QueryBar筛选参数（可选） */
-const queryItems = ref({})
+const queryItems = ref({
+	time: new Date().getDay() + '',
+	platform: '3'
+})
+let weekOptions = ref([])
+const rang = ['1', '2', '3', '4', '5']
 const imageSpaceRef = ref(null)
 const templateRow = ref({
-	code: '',
-	killZone: '',
+	code: undefined,
+	killZone: undefined,
 	orderLabel: '',
-	orderTime: '',
+	orderTime: undefined,
 	profit: '',
 	risk: '',
-	platform: '',
-	remark: '',
-	status: '',
+	platform: undefined,
+	remark: undefined,
+	status: undefined,
 	enable: true
 })
 onMounted(() => {
+	weekOptions.value = dict[dictKey.WEEK_RANG].filter((item) => rang.includes(item.value))
+	weekOptions.value.unshift({
+		label: '本周',
+		value: '0'
+	})
 	$table.value?.handleSearch()
 })
 
 const onEditRow = (row, v, key) => {
 	row.editable = true
 	row[key] = v
+	console.log(v, key)
 }
 
 const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete, handleOpen, handleEdit, handleSave } =
@@ -174,7 +177,7 @@ const columns = [
 	{
 		title: '商品代码',
 		key: 'code',
-		width: 100,
+		width: 120,
 		align: 'center',
 		render(row) {
 			return h(EditRow, {
@@ -188,18 +191,59 @@ const columns = [
 	{
 		title: '杀戮区',
 		key: 'killZone',
-		width: 100,
+		width: 120,
 		align: 'center',
 		render(row) {
 			return h(EditRow, {
-				value: row.code,
+				value: row.killZone,
 				onChangeValue: (v) => onEditRow(row, v, 'killZone'),
 				type: 'select',
 				dictKey: dictKey.TRADE_KILL_ZONE
 			})
 		}
 	},
-	{ title: '标签', key: 'orderLabel', width: 150, ellipsis: { tooltip: true } },
+
+	{
+		title: '盈利',
+		align: 'center',
+		key: 'profit',
+		width: 100,
+		render(row) {
+			return h(EditRow, {
+				value: row.profit ? String(row.profit) : '',
+				onChangeValue: (v) => onEditRow(row, Number(v), 'profit'),
+				type: 'input'
+			})
+		}
+	},
+	{
+		title: '风险',
+		key: 'risk',
+		width: 100,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.risk ? String(row.risk) : '',
+				onChangeValue: (v) => onEditRow(row, Number(v), 'risk'),
+				type: 'input'
+			})
+		}
+	},
+	{
+		title: '状态',
+		key: 'status',
+		width: 120,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row.platform,
+				onChangeValue: (v) => onEditRow(row, v, 'status'),
+				type: 'select',
+				dictKey: dictKey.TRADE_ORDER_STATUS
+			})
+		}
+	},
+	{ title: 'POI', key: 'orderLabel', width: 150, ellipsis: { tooltip: true }, align: 'center' },
 	{
 		title: '下单时间',
 		key: 'orderTime',
@@ -213,36 +257,11 @@ const columns = [
 			})
 		}
 	},
-	{
-		title: '盈利',
-		align: 'center',
-		key: 'profit',
-		width: 60,
-		render(row) {
-			return h(EditRow, {
-				value: row.profit,
-				onChangeValue: (v) => onEditRow(row, v, 'profit'),
-				type: 'input'
-			})
-		}
-	},
-	{
-		title: '风险',
-		key: 'risk',
-		width: 60,
-		align: 'center',
-		render(row) {
-			return h(EditRow, {
-				value: row.risk,
-				onChangeValue: (v) => onEditRow(row, v, 'risk'),
-				type: 'input'
-			})
-		}
-	},
+
 	{
 		title: '平台',
 		key: 'platform',
-		width: 100,
+		width: 120,
 		align: 'center',
 		render(row) {
 			return h(EditRow, {
@@ -253,65 +272,51 @@ const columns = [
 			})
 		}
 	},
-	{
-		title: '备注',
-		key: 'remark',
-		width: 60,
-		align: 'center',
-		render(row) {
-			return h(EditRow, {
-				value: row.risk,
-				onChangeValue: (v) => onEditRow(row, v, 'remark'),
-				type: 'input'
-			})
-		}
-	},
-	{
-		title: '状态',
-		key: 'status',
-		width: 100,
-		align: 'center',
-		render(row) {
-			return h(EditRow, {
-				value: row.platform,
-				onChangeValue: (v) => onEditRow(row, v, 'status'),
-				type: 'select',
-				dictKey: dictKey.TRADE_ORDER_STATUS
-			})
-		}
-	},
+	// {
+	// 	title: '备注',
+	// 	key: 'remark',
+	// 	width: 100,
+	// 	align: 'center',
+	// 	render(row) {
+	// 		return h(EditRow, {
+	// 			value: row.risk,
+	// 			onChangeValue: (v) => onEditRow(row, v, 'remark'),
+	// 			type: 'input'
+	// 		})
+	// 	}
+	// },
 
-	{
-		title: '创建时间',
-		key: 'createdAt',
-		width: 180
-	},
+	// {
+	// 	title: '创建时间',
+	// 	key: 'createdAt',
+	// 	width: 180
+	// },
 
-	{
-		title: '显示',
-		key: 'enable',
-		width: 120,
-		render: (row) =>
-			h(
-				NSwitch,
-				{
-					size: 'small',
-					rubberBand: false,
-					value: row.enable,
-					loading: !!row.enableLoading,
-					onUpdateValue: () => handleEnable(row)
-				},
-				{
-					checked: () => '启用',
-					unchecked: () => '停用'
-				}
-			)
-	},
+	// {
+	// 	title: '显示',
+	// 	key: 'enable',
+	// 	width: 120,
+	// 	render: (row) =>
+	// 		h(
+	// 			NSwitch,
+	// 			{
+	// 				size: 'small',
+	// 				rubberBand: false,
+	// 				value: row.enable,
+	// 				loading: !!row.enableLoading,
+	// 				onUpdateValue: () => handleEnable(row)
+	// 			},
+	// 			{
+	// 				checked: () => '启用',
+	// 				unchecked: () => '停用'
+	// 			}
+	// 		)
+	// },
 	{
 		title: '操作',
 		key: 'actions',
-		width: 320,
-		align: 'right',
+		width: 80,
+		align: 'center',
 		fixed: 'right',
 		hideInExcel: true,
 		render(row) {
@@ -324,11 +329,23 @@ const columns = [
 							type: 'primary',
 							style: 'margin-left: 12px;',
 							disabled: row.code === 'SUPER_ADMIN',
-							onClick: () => handleEdit(cloneDeep({ ...row, files: row.files }))
+							onClick: () => onSave(cloneDeep({ ...row }))
 						},
 						{
 							default: () => '保存',
 							icon: () => h('i', { class: 'i-material-symbols:save text-14' })
+						}
+					),
+				!row.editable &&
+					h(
+						NButton,
+						{
+							size: 'small',
+							onClick: () => onSave(cloneDeep({ ...row }))
+						},
+						{
+							default: () => '打开',
+							icon: () => h('i', { class: 'i-material-symbols:arrow-right text-14' })
 						}
 					)
 			]
@@ -342,6 +359,7 @@ const getImage = (files) => {
 		modalForm.value.files = files
 	}
 }
+
 function handleAddRow() {
 	$table.value?.tableData.push(cloneDeep(templateRow.value))
 }
@@ -357,19 +375,23 @@ async function handleEnable(row) {
 		row.enableLoading = false
 	}
 }
-
-function onSave() {
-	if (modalAction.value === 'setRole') {
-		return handleSave({
-			api: () => api.setRole(modalForm.value),
-			cb: () => $message.success('分配成功')
-		})
-	} else if (modalAction.value === 'reset') {
-		return handleSave({
-			api: () => api.resetPwd(modalForm.value.id, modalForm.value),
-			cb: () => $message.success('密码重置成功')
-		})
-	}
-	handleSave()
+function onSave(data) {
+	console.log(data)
+	return handleSave({
+		api: () => (data.id ? api.update(data) : api.create(data)),
+		cb: () => $message.success('保存成功')
+	})
+	// if (modalAction.value === 'setRole') {
+	// 	return handleSave({
+	// 		api: () => api.setRole(modalForm.value),
+	// 		cb: () => $message.success('分配成功')
+	// 	})
+	// } else if (modalAction.value === 'reset') {
+	// 	return handleSave({
+	// 		api: () => api.resetPwd(modalForm.value.id, modalForm.value),
+	// 		cb: () => $message.success('密码重置成功')
+	// 	})
+	// }
+	// handleSave()
 }
 </script>

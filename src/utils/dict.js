@@ -7,6 +7,7 @@ export const dictKey = {
 	TRADE_PLATFORM: 'TRADE_PLATFORM',
 	TRADE_ORDER_STATUS: 'TRADE_ORDER_STATUS',
 	TRADE_ORDER_DIRECTION: 'TRADE_ORDER_DIRECTION',
+	WEEK_RANG: 'WEEK_RANG',
 	TRADE_ORDER_CODE: 'TRADE_ORDER_CODE'
 }
 export const dict = {
@@ -122,6 +123,36 @@ export const dict = {
 		{
 			label: 'GC',
 			value: '3'
+		}
+	],
+	[dictKey.WEEK_RANG]: [
+		{
+			label: '周一',
+			value: '1'
+		},
+		{
+			label: '周二',
+			value: '2'
+		},
+		{
+			label: '周三',
+			value: '3'
+		},
+		{
+			label: '周四',
+			value: '4'
+		},
+		{
+			label: '周五',
+			value: '5'
+		},
+		{
+			label: '周六',
+			value: '6'
+		},
+		{
+			label: '周日',
+			value: '7'
 		}
 	]
 }

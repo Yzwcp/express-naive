@@ -1,10 +1,11 @@
 <script setup>
 import { defineProps, ref } from 'vue'
-import { NInput, NSelect } from 'naive-ui'
+import { NInput, NSelect, NInputNumber } from 'naive-ui'
 import { dict, dictKey, getDictLabel } from '@/utils/index.js'
+import dayjs from 'dayjs'
 const props = defineProps({
 	value: {
-		type: String,
+		type: [String, Number],
 		default: undefined
 	},
 	type: {
@@ -16,14 +17,14 @@ const props = defineProps({
 		default: ''
 	}
 })
-const emit = defineEmits(['onValue'])
+const emit = defineEmits(['changeValue'])
 const isEdit = ref(false)
 const lock = ref(false)
+const selectRef = ref()
 const inputValue = ref(props.value)
 const handleValue = (v) => {
-	inputValue.value = v
 	isEdit.value = false
-	emit('changeValue', v)
+	emit('changeValue', inputValue.value)
 }
 const mouseleave = () => {
 	if (lock.value) {
@@ -31,12 +32,18 @@ const mouseleave = () => {
 	}
 	isEdit.value = false
 }
+const openSelect = () => {
+	isEdit.value = true
+	nextTick(() => {
+		selectRef.value.focus()
+	})
+}
 </script>
 
 <template>
 	<div class="w-full text-center">
 		<template v-if="props.type === 'input'">
-			<div @mouseenter="isEdit = true" @mouseleave="mouseleave">
+			<div @mouseover="isEdit = true" @mouseleave="mouseleave">
 				<div class="w-full cursor-pointer" v-if="!isEdit">
 					<span v-if="inputValue">{{ inputValue }}</span>
 					<span v-else class="color-gray-400">请填写</span>
@@ -53,8 +60,8 @@ const mouseleave = () => {
 							mouseleave()
 						}
 					"
-					:value="inputValue"
-					@update:value="(e) => (inputValue = e)"
+					v-model:value="inputValue"
+					@change="handleValue"
 					@keyup.enter="() => handleValue(inputValue)"
 				/>
 			</div>
@@ -62,10 +69,20 @@ const mouseleave = () => {
 		<template v-else-if="props.type === 'time'">
 			<div @mouseenter="isEdit = true" @mouseleave="mouseleave">
 				<div class="w-full cursor-pointer" v-if="!isEdit">
-					<span v-if="inputValue">{{ inputValue }}</span>
+					<span v-if="inputValue">{{ dayjs(inputValue).format('YYYY/MM/DD HH:mm') }}</span>
 					<span v-else class="color-gray-400">请选择时间</span>
 				</div>
 				<n-date-picker
+					@focus="lock = true"
+					@change="handleValue"
+					:on-update:show="
+						(v) => {
+							if (!v) {
+								lock = false
+								mouseleave()
+							}
+						}
+					"
 					v-if="isEdit"
 					:format="'yyyy/MM/dd HH:mm'"
 					v-model:value="inputValue"
@@ -75,21 +92,30 @@ const mouseleave = () => {
 			</div>
 		</template>
 		<template v-else-if="props.type === 'select'">
-			<div @click="isEdit = true">
+			<div @click="openSelect">
 				<div v-if="!isEdit" class="w-full cursor-pointer" @focus="isEdit = true" @blur="isEdit = false">
 					<span v-if="inputValue">{{ getDictLabel(props.dictKey, inputValue) }}</span>
 					<span v-else class="color-gray-400">请选择</span>
 				</div>
 				<NSelect
+					show-on-focus
+					size="small"
+					ref="selectRef"
 					placeholder="请选择"
 					v-if="isEdit"
 					class="w-full"
-					@update:value="(e) => handleValue(e)"
-					:value="inputValue"
+					v-model:value="inputValue"
+					@update:value="handleValue"
+					@update:show="
+						(v) => {
+							if (!v) isEdit = false
+						}
+					"
 					:options="dict[props.dictKey]"
 				></NSelect>
 			</div>
 		</template>
+		<template v-else-if="props.type === 'select'"> </template>
 	</div>
 </template>
 
