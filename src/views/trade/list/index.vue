@@ -123,6 +123,7 @@ import { dict, dictKey, formatDateTime } from '@/utils/index.js'
 import { NAvatar, NButton, NSwitch, NTag, NImage } from 'naive-ui'
 import { MeUpload } from '@/components/index.js'
 import api from './api.js'
+import modelApi from '@/views/trade/poi/api.js'
 import { cloneDeep } from 'lodash-es'
 
 defineOptions({ name: 'TradeDiary' })
@@ -136,6 +137,7 @@ const queryItems = ref({
 let weekOptions = ref([])
 const rang = ['1', '2', '3', '4', '5']
 const imageSpaceRef = ref(null)
+const poiList = ref([])
 const templateRow = ref({
 	code: undefined,
 	killZone: undefined,
@@ -146,9 +148,19 @@ const templateRow = ref({
 	platform: undefined,
 	remark: undefined,
 	status: undefined,
-	enable: true
+	enable: true,
+	tradingModels: []
 })
 onMounted(() => {
+	modelApi.read({}).then(
+		(res) =>
+			(poiList.value = res.data.map((item) => {
+				return {
+					label: item.name,
+					value: item.id
+				}
+			}))
+	)
 	weekOptions.value = dict[dictKey.WEEK_RANG].filter((item) => rang.includes(item.value))
 	weekOptions.value.unshift({
 		label: '本周',
@@ -243,7 +255,20 @@ const columns = [
 			})
 		}
 	},
-	{ title: 'POI', key: 'orderLabel', width: 150, ellipsis: { tooltip: true }, align: 'center' },
+	{
+		title: 'POI',
+		key: 'tradingModels',
+		width: 150,
+		align: 'center',
+		render(row) {
+			return h(EditRow, {
+				value: row?.tradingModels.map((item) => item.id) || [],
+				options: poiList.value,
+				onChangeValue: (v) => onEditRow(row, v, 'tradingModels'),
+				type: 'multiple'
+			})
+		}
+	},
 	{
 		title: '下单时间',
 		key: 'orderTime',
@@ -361,7 +386,7 @@ const getImage = (files) => {
 }
 
 function handleAddRow() {
-	$table.value?.tableData.push(cloneDeep(templateRow.value))
+	$table.value?.tableData.unshift(cloneDeep(templateRow.value))
 }
 async function handleEnable(row) {
 	row.enableLoading = true
@@ -376,7 +401,6 @@ async function handleEnable(row) {
 	}
 }
 function onSave(data) {
-	console.log(data)
 	return handleSave({
 		api: () => (data.id ? api.update(data) : api.create(data)),
 		cb: () => $message.success('保存成功')

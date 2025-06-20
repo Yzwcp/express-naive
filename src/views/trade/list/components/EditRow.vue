@@ -3,9 +3,11 @@ import { defineProps, ref } from 'vue'
 import { NInput, NSelect, NInputNumber } from 'naive-ui'
 import { dict, dictKey, getDictLabel } from '@/utils/index.js'
 import dayjs from 'dayjs'
+import { debounce } from 'lodash-es'
+
 const props = defineProps({
 	value: {
-		type: [String, Number],
+		type: [String, Number, Array],
 		default: undefined
 	},
 	type: {
@@ -15,6 +17,10 @@ const props = defineProps({
 	dictKey: {
 		type: String,
 		default: ''
+	},
+	options: {
+		type: Array,
+		default: () => []
 	}
 })
 const emit = defineEmits(['changeValue'])
@@ -22,19 +28,34 @@ const isEdit = ref(false)
 const lock = ref(false)
 const selectRef = ref()
 const inputValue = ref(props.value)
+
+const filterLabel = () => {
+	let text = []
+	props.options.forEach((item) => {
+		if (inputValue.value && inputValue.value?.includes(item.value)) {
+			text.push(item.label)
+		}
+	})
+	return text
+}
+const labelText = computed(() => {
+	if (props.type === 'multiple') {
+		return filterLabel() || []
+	}
+})
+
 const handleValue = (v) => {
 	isEdit.value = false
 	emit('changeValue', inputValue.value)
 }
 const mouseleave = () => {
-	if (lock.value) {
-		return
-	}
+	if (lock.value) return
 	isEdit.value = false
 }
 const openSelect = () => {
 	isEdit.value = true
 	nextTick(() => {
+		console.log(selectRef.value)
 		selectRef.value.focus()
 	})
 }
@@ -43,7 +64,7 @@ const openSelect = () => {
 <template>
 	<div class="w-full text-center">
 		<template v-if="props.type === 'input'">
-			<div @mouseover="isEdit = true" @mouseleave="mouseleave">
+			<div @click="openSelect" @mouseleave="mouseleave">
 				<div class="w-full cursor-pointer" v-if="!isEdit">
 					<span v-if="inputValue">{{ inputValue }}</span>
 					<span v-else class="color-gray-400">请填写</span>
@@ -51,6 +72,7 @@ const openSelect = () => {
 				<NInput
 					class="w-full"
 					placeholder="请填写"
+					ref="selectRef"
 					size="small"
 					v-if="isEdit"
 					@focus="lock = true"
@@ -67,14 +89,16 @@ const openSelect = () => {
 			</div>
 		</template>
 		<template v-else-if="props.type === 'time'">
-			<div @mouseenter="isEdit = true" @mouseleave="mouseleave">
+			<div @mouseleave="mouseleave">
 				<div class="w-full cursor-pointer" v-if="!isEdit">
-					<span v-if="inputValue">{{ dayjs(inputValue).format('YYYY/MM/DD HH:mm') }}</span>
+					<span @click="openSelect" v-if="inputValue">{{ dayjs(inputValue).format('YYYY/MM/DD HH:mm') }}</span>
 					<span v-else class="color-gray-400">请选择时间</span>
 				</div>
 				<n-date-picker
 					@focus="lock = true"
 					@change="handleValue"
+					:show="isEdit"
+					ref="selectRef"
 					:on-update:show="
 						(v) => {
 							if (!v) {
@@ -112,6 +136,35 @@ const openSelect = () => {
 						}
 					"
 					:options="dict[props.dictKey]"
+				></NSelect>
+			</div>
+		</template>
+		<template v-else-if="props.type === 'multiple'">
+			<div @click="openSelect">
+				<div v-if="!isEdit" class="w-full cursor-pointer" @focus="isEdit = true" @blur="isEdit = false">
+					<span v-if="labelText.length > 0" class="cursor-pointer">
+						<n-tag size="small" v-for="item in labelText">{{ item }}</n-tag>
+					</span>
+					<span v-else class="color-gray-400">请选择</span>
+				</div>
+				<NSelect
+					multiple
+					show-on-focus
+					size="small"
+					ref="selectRef"
+					placeholder="请选择"
+					v-if="isEdit"
+					class="w-full"
+					v-model:value="inputValue"
+					@update:show="
+						(v) => {
+							if (!v) {
+								handleValue(inputValue)
+								isEdit = false
+							}
+						}
+					"
+					:options="props.options"
 				></NSelect>
 			</div>
 		</template>

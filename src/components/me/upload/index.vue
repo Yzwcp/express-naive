@@ -61,7 +61,9 @@
 							</div>
 
 							<n-space class="mt-10" justify="space-evenly">
-								<n-button dashed type="primary" size="tiny" @click="select(item)"> 选择 </n-button>
+								<n-button :dashed="!selectIdList.includes(item.id)" type="primary" size="tiny" @click="select(item)">
+									{{ selectIdList.includes(item.id) ? '取消' : '选择' }}
+								</n-button>
 								<!--								<n-button dashed type="primary" @click="copy(`![${item.fileName}](${item.url})`)"> MD </n-button>-->
 							</n-space>
 						</n-card>
@@ -97,6 +99,9 @@ const showModal = ref(false)
 const loading = ref(false)
 const typeValue = ref('image')
 const selectList = ref([])
+const selectIdList = computed(() => {
+	return selectList.value.map((item) => item.id)
+})
 const page = reactive({
 	pageNo: 1,
 	pageSize: 15,
@@ -123,7 +128,11 @@ const onPageChange = () => {
 }
 const select = (item) => {
 	if (props.selectMultiple) {
-		selectList.value.push(item)
+		if (selectIdList.value.includes(item.id)) {
+			selectList.value = selectList.value.filter((i) => i.id !== item.id)
+		} else {
+			selectList.value.push(item)
+		}
 		// emit('onOk', [item])
 		return
 	}
@@ -143,6 +152,7 @@ const loadFileList = async () => {
 }
 const open = () => {
 	loadFileList()
+	selectList.value = []
 	showModal.value = true
 }
 function onBeforeUpload({ file }) {
