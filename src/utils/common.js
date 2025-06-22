@@ -8,7 +8,6 @@
  **********************************/
 
 import dayjs from 'dayjs'
-
 /**
  * @param {(object | string | number)} time
  * @param {string} format
@@ -102,4 +101,66 @@ export function useResize(el, cb) {
 	})
 	observer.observe(el)
 	return observer
+}
+
+export function getExtendedTimestamps() {
+	const today = dayjs()
+
+	// 本周时间范围（周日为一周结束）
+	let endOfWeek = today
+	while (endOfWeek.day() !== 0) {
+		// 0 表示周日
+		endOfWeek = endOfWeek.add(1, 'day')
+	}
+	endOfWeek = endOfWeek.endOf('day')
+	const startOfWeek = endOfWeek.subtract(6, 'day').startOf('day')
+
+	// 本月时间范围
+	const startOfMonth = today.startOf('month')
+	const endOfMonth = today.endOf('month')
+
+	// 本年时间范围
+	const startOfYear = today.startOf('year')
+	const endOfYear = today.endOf('year')
+
+	// 生成周一到周五的日期数组
+	const weekdays = []
+	for (let i = 0; i < 5; i++) {
+		const day = startOfWeek.add(i, 'day')
+		weekdays.push({
+			date: day.format('dddd'),
+			start: day.startOf('day').valueOf(),
+			end: day.endOf('day').valueOf()
+		})
+	}
+	const all = {
+		week: {
+			date: '本周',
+			start: startOfWeek.valueOf(),
+			end: endOfWeek.valueOf(),
+			days: weekdays
+		},
+		month: {
+			date: '本月',
+			start: startOfMonth.valueOf(),
+			end: endOfMonth.valueOf(),
+			days: endOfMonth.date() // 本月总天数
+		},
+		year: {
+			date: '本年',
+			start: startOfYear.valueOf(),
+			end: endOfYear.valueOf(),
+			months: 12 // 一年12个月
+		}
+	}
+	return {
+		weekdays,
+		all: [all.week, all.month, all.year, ...weekdays]
+	}
+}
+
+//保留n位小数
+export function roundTo(num, decimalPlaces = 2) {
+	const big = new Big(num)
+	return big.toFixed(decimalPlaces)
 }

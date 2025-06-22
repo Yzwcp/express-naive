@@ -160,7 +160,7 @@ export const dict = {
 export const getDictLabel = (key, value) => {
 	if (isNullOrUndef(value)) return ''
 	if (isNullOrUndef(key)) return ''
-	console.log(key, value)
+	// console.log(key, value)
 	const item = dict[key].find((item) => item.value == value)
 	return item?.label || ''
 }

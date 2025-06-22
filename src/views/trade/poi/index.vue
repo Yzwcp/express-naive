@@ -8,6 +8,7 @@ import { ref, onMounted } from 'vue'
 import { cloneDeep } from 'lodash-es'
 const imageSpaceRef = ref([])
 const tableData = ref([])
+const modelAnalysis = ref({})
 const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete, handleOpen, handleEdit, handleSave } =
 	useCrud({
 		name: '商品',
@@ -133,16 +134,17 @@ onMounted(() => {
 					<div class="f-c-c gap-x-10 text-18">
 						<div class="f-c-c" title="盈亏比">
 							<i class="i-material-symbols:analytics-outline-sharp cursor-pointer" />
-							<span class="text-12">1.3R</span>
+							<span class="text-12">{{ item.avgRRR }}R</span>
 						</div>
 						<div class="color-gray-400">·</div>
 						<div class="f-c-c" title="胜率">
-							<i class="i-material-symbols:wine-bar-rounded cursor-pointer" /> <span class="text-12"> 56%</span>
+							<i class="i-material-symbols:wine-bar-rounded cursor-pointer" />
+							<span class="text-12"> {{ item.rating }}%</span>
 						</div>
 						<div class="color-gray-400">·</div>
 						<div class="f-c-c" title="下单总数">
 							<i class="i-material-symbols:nest-secure-alarm-outline cursor-pointer" />
-							<span class="text-12"> 56%</span>
+							<span class="text-12"> {{ item.total }}</span>
 						</div>
 					</div>
 				</template>

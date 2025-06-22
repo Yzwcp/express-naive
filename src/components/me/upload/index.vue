@@ -10,8 +10,11 @@
 	<n-modal v-model:show="showModal" class="w-1/2" title="文件列表" preset="card">
 		<n-space align="center" justify="space-between">
 			<div class="f-c-c gap-x-10">
-				<n-radio-group v-model:value="typeValue">
-					<n-radio-button v-for="type in types" :key="type.value" :value="type.value" :label="type.label" />
+				<!--				<n-radio-group v-model:value="typeValue">-->
+				<!--					<n-radio-button v-for="type in types" :key="type.value" :value="type.value" :label="type.label" />-->
+				<!--				</n-radio-group>-->
+				<n-radio-group v-model:value="classify" @update:value="loadFileList">
+					<n-radio-button v-for="type in classifyList" :key="type.value" :value="type.value" :label="type.label" />
 				</n-radio-group>
 				<NButton :loading="loading" type="default" link @click="loadFileList">
 					<i class="i-material-symbols:refresh text-18" />
@@ -28,7 +31,7 @@
 				@before-upload="onBeforeUpload"
 				@finish="handleFinish"
 				:data="{
-					classify: props.classify
+					classify: classify
 				}"
 				:headers="{
 					Authorization: `Bearer ${authStore.accessToken}`
@@ -48,7 +51,7 @@
 						<n-card
 							v-for="(item, index) in imgList"
 							:key="index"
-							class="w-150 rounded-20 hover:card-shadow p-0 overflow-hidden"
+							class="w-150 rounded-20 hover:card-shadow p-0 overflow-hidden group"
 						>
 							<div
 								:title="item.originalName"
@@ -56,16 +59,22 @@
 							>
 								{{ item.originalName }}
 							</div>
-							<div class="h-90 f-c-c mt-16">
+							<div class="h-90 f-c-c mt-16 cursor-pointer" @click="select(item)">
 								<n-image width="200" :src="item.fullPath" />
 							</div>
-
-							<n-space class="mt-10" justify="space-evenly">
-								<n-button :dashed="!selectIdList.includes(item.id)" type="primary" size="tiny" @click="select(item)">
-									{{ selectIdList.includes(item.id) ? '取消' : '选择' }}
-								</n-button>
+							<div class="mt-10 f-c-c gap-x-12" justify="space-evenly">
+								<div class="hidden group-hover:block">
+									<n-button size="tiny" dashed type="error" @click="remove(item)">
+										<i class="i-material-symbols-delete-rounded"></i>
+									</n-button>
+								</div>
+								<div>
+									<n-button :dashed="!selectIdList.includes(item.id)" type="primary" size="tiny" @click="select(item)">
+										{{ selectIdList.includes(item.id) ? '取消' : '选择' }}
+									</n-button>
+								</div>
 								<!--								<n-button dashed type="primary" @click="copy(`![${item.fileName}](${item.url})`)"> MD </n-button>-->
-							</n-space>
+							</div>
 						</n-card>
 						<div v-for="i in 4" :key="i" class="w-280" />
 					</n-space>
@@ -122,9 +131,33 @@ const types = [
 	{ label: '图片', value: 'image' },
 	{ label: '视频', value: 'video' }
 ]
-
+const classifyList = [
+	{ label: '全部', value: 'all' },
+	{ label: '其他', value: 'temp' },
+	{ label: '交易', value: 'trade' }
+]
+const classify = ref(props.classify)
 const onPageChange = () => {
 	loadFileList()
+}
+const remove = (item) => {
+	const d = $dialog.warning({
+		content: '确定删除？',
+		title: '提示',
+		positiveText: '确定',
+		negativeText: '取消',
+		async onPositiveClick() {
+			try {
+				d.loading = true
+				await api.removeFile(item.id)
+				$message.success('删除成功')
+				d.loading = false
+				loadFileList()
+			} catch (error) {
+				d.loading = false
+			}
+		}
+	})
 }
 const select = (item) => {
 	if (props.selectMultiple) {
@@ -145,7 +178,7 @@ const ok = () => {
 }
 const loadFileList = async () => {
 	loading.value = true
-	const { data } = await api.getFileList(page)
+	const { data } = await api.getFileList({ ...page, classify: classify.value })
 	loading.value = false
 	imgList.value = data.pageData
 	page.total = data.total

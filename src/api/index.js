@@ -22,5 +22,6 @@ export default {
 	// 验证菜单路径
 	validateMenuPath: (path) => request.get(`/sys/permission/menu/validate?path=${path}`),
 	//获取文件列表
-	getFileList: (params) => request.get('/file', { params })
+	getFileList: (params) => request.get('/file', { params }),
+	removeFile: (id) => request.delete('/file/' + id, {})
 }

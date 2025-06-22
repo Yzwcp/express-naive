@@ -3,7 +3,9 @@ import { defineProps, ref } from 'vue'
 import { NInput, NSelect, NInputNumber } from 'naive-ui'
 import { dict, dictKey, getDictLabel } from '@/utils/index.js'
 import dayjs from 'dayjs'
+import HRender from '@/components/me/render/index.vue'
 import { debounce } from 'lodash-es'
+import { prop } from 'dom7'
 
 const props = defineProps({
 	value: {
@@ -21,6 +23,17 @@ const props = defineProps({
 	options: {
 		type: Array,
 		default: () => []
+	},
+	unit: {
+		type: String,
+		default: ''
+	},
+	textClass: {
+		type: String,
+		default: ''
+	},
+	render: {
+		type: Function
 	}
 })
 const emit = defineEmits(['changeValue'])
@@ -66,8 +79,8 @@ const openSelect = () => {
 		<template v-if="props.type === 'input'">
 			<div @click="openSelect" @mouseleave="mouseleave">
 				<div class="w-full cursor-pointer" v-if="!isEdit">
-					<span v-if="inputValue">{{ inputValue }}</span>
-					<span v-else class="color-gray-400">请填写</span>
+					<span v-if="inputValue" :class="props.textClass">{{ inputValue }}{{ props.unit }}</span>
+					<span v-else class="color-gray-400 color-f">请填写</span>
 				</div>
 				<NInput
 					class="w-full"
@@ -118,7 +131,10 @@ const openSelect = () => {
 		<template v-else-if="props.type === 'select'">
 			<div @click="openSelect">
 				<div v-if="!isEdit" class="w-full cursor-pointer" @focus="isEdit = true" @blur="isEdit = false">
-					<span v-if="inputValue">{{ getDictLabel(props.dictKey, inputValue) }}</span>
+					<div v-if="props.render">
+						<HRender :render="props.render"></HRender>
+					</div>
+					<span v-else-if="inputValue">{{ getDictLabel(props.dictKey, inputValue) }}</span>
 					<span v-else class="color-gray-400">请选择</span>
 				</div>
 				<NSelect
@@ -143,7 +159,7 @@ const openSelect = () => {
 			<div @click="openSelect">
 				<div v-if="!isEdit" class="w-full cursor-pointer" @focus="isEdit = true" @blur="isEdit = false">
 					<span v-if="labelText.length > 0" class="cursor-pointer">
-						<n-tag size="small" v-for="item in labelText">{{ item }}</n-tag>
+						<n-tag class="mx-2" size="small" v-for="item in labelText">{{ item }}</n-tag>
 					</span>
 					<span v-else class="color-gray-400">请选择</span>
 				</div>

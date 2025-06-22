@@ -39,6 +39,7 @@
 	</AppCard>
 
 	<NDataTable
+		ref="tableRef"
 		:remote="remote"
 		:loading="loading"
 		:scroll-x="scrollX"
@@ -48,6 +49,7 @@
 		:pagination="isPagination ? pagination : false"
 		@update:checked-row-keys="onChecked"
 		@update:page="onPageChange"
+		@update:sorter="onSorter"
 	/>
 </template>
 
@@ -124,11 +126,14 @@ const pagination = reactive({
 
 // 是否展开
 const isExpanded = ref(false)
+const tableRef = ref()
 
 function toggleExpand() {
 	isExpanded.value = !isExpanded.value
 }
-
+function onSorter(filters, initiatorColumn) {
+	emit('onSorter', filters, initiatorColumn)
+}
 async function handleQuery() {
 	try {
 		loading.value = true

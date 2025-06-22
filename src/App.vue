@@ -33,7 +33,9 @@ import { LayoutSetting } from '@/components'
 import { useAppStore, useTabStore } from '@/store'
 import { darkTheme, dateZhCN, zhCN } from 'naive-ui'
 import { layoutSettingVisible } from './settings'
-
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn' // 加载中文语言包
+dayjs.locale('zh-cn') // 设置语言为中文
 const layouts = new Map()
 function getLayout(name) {
 	// 利用map将加载过的layout缓存起来，防止重新加载layout导致页面闪烁
