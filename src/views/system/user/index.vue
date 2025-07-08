@@ -115,7 +115,7 @@ const genders = [
 	{ label: '女', value: '2' }
 ]
 const roles = ref([])
-api.getAllRoles().then(({ data = [] }) => (roles.value = data))
+api.getAllRoles().then(({ data = [] }) => (roles.value = data.pageData))
 
 const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete, handleOpen, handleSave } = useCrud({
 	name: '用户',

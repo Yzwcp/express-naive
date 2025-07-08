@@ -308,19 +308,26 @@ const analysis = computed(() => {
 	let income = 0
 	let win = 0
 	let excluded = 0
-	$table?.value?.tableData.forEach((item) => {
-		if (item.income) income += Number(item.income)
-		if (item.status === '1') win += 1
-		if (item.status === '3') excluded += 1
-	})
-	return {
-		income,
-		//保留1位小数
-		rating: Decimal(win)
-			.div($table?.value?.tableData.length || 0)
-			.mul(100)
-			.trunc(),
-		total: $table?.value?.tableData.length
+	let tableData = $table?.value?.tableData
+	if (tableData && tableData.length > 0) {
+		tableData.forEach((item) => {
+			if (item.income) income += Number(item.income)
+			if (item.status === '1') win += 1
+			if (item.status === '3') excluded += 1
+		})
+		const rating = Decimal(win).div(tableData.length).mul(100).trunc()
+		return {
+			income,
+			//保留1位小数
+			rating,
+			total: tableData.length
+		}
+	} else {
+		return {
+			income: 0,
+			rating: 0,
+			total: 0
+		}
 	}
 })
 

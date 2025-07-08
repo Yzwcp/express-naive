@@ -14,7 +14,7 @@ export default {
 	setRole: (data) => request.patch(`/sys/user/setRoles`, data),
 	update: (id, data) => request.put(`/sys/user/${id}`, data),
 	delete: (id) => request.delete(`/sys/user/${id}`),
-	resetPwd: (id, data) => request.patch(`/sys/user/password/reset/${id}`, data),
+	resetPwd: (id, data) => request.patch(`/sys/user/password/${id}`, data),
 
 	getAllRoles: () => request.get('/sys/role?enable=1')
 }
