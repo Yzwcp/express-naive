@@ -164,3 +164,7 @@ export function roundTo(num, decimalPlaces = 2) {
 	const big = new Big(num)
 	return big.toFixed(decimalPlaces)
 }
+
+export function mergeImageUrl(url) {
+	return import.meta.env.VITE_IMG_BASE_URL + url
+}

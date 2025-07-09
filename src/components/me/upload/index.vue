@@ -9,6 +9,7 @@
 <template>
 	<n-modal v-model:show="showModal" class="w-1/2" title="文件列表" preset="card">
 		<n-space align="center" justify="space-between">
+			<!--			<img src="http://127.0.0.1:9000/uploads/temp/19a14aee2ee1459a8b50e3caecb8072f.png" alt="" />-->
 			<div class="f-c-c gap-x-10">
 				<!--				<n-radio-group v-model:value="typeValue">-->
 				<!--					<n-radio-button v-for="type in types" :key="type.value" :value="type.value" :label="type.label" />-->
@@ -60,7 +61,7 @@
 								{{ item.originalName }}
 							</div>
 							<div class="h-90 f-c-c mt-16 cursor-pointer" @click="select(item)">
-								<n-image width="200" :src="item.fullPath" />
+								<n-image width="200" :src="mergeImageUrl(item.path)" />
 							</div>
 							<div class="mt-10 f-c-c gap-x-12" justify="space-evenly">
 								<div class="hidden group-hover:block">
@@ -94,6 +95,8 @@
 </template>
 
 <script setup>
+import { mergeImageUrl } from '@/utils/index.js'
+
 defineOptions({ name: 'ImgUpload' })
 import { NButton } from 'naive-ui'
 import { useAuthStore } from '@/store/index.js'
@@ -103,7 +106,7 @@ const env = import.meta.env
 const authStore = useAuthStore()
 const emit = defineEmits(['onOk'])
 //获取环境变量
-const uploadAction = env.VITE_AXIOS_BASE_URL + '/file/upload'
+const uploadAction = env.VITE_AXIOS_BASE_URL + '/sys/file/upload'
 const showModal = ref(false)
 const loading = ref(false)
 const typeValue = ref('image')
@@ -132,7 +135,7 @@ const types = [
 	{ label: '视频', value: 'video' }
 ]
 const classifyList = [
-	{ label: '全部', value: 'all' },
+	{ label: '全部', value: '' },
 	{ label: '其他', value: 'temp' },
 	{ label: '交易', value: 'trade' }
 ]

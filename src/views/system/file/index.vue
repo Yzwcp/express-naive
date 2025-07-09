@@ -77,7 +77,7 @@
 
 <script setup>
 import { MeCrud, MeModal, MeQueryItem } from '@/components'
-import { getDictLabel, dictKey } from '@/utils'
+import { getDictLabel, dictKey, mergeImageUrl } from '@/utils'
 import { useCrud } from '@/composables'
 import { NButton, NSwitch, NImage } from 'naive-ui'
 import { MeUpload } from '@/components'
@@ -112,8 +112,8 @@ const columns = [
 		key: 'fullPath',
 		render: (row) => {
 			return h(NImage, {
-				src: row.fullPath,
-				class: 'w-40 h-40'
+				src: mergeImageUrl(row.path),
+				class: 'w-40 h-20'
 			})
 		}
 	},
