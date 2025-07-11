@@ -1,85 +1,49 @@
-<script setup lang="ts">
-import '@wangeditor/editor/dist/css/style.css' // 引入 css
-defineOptions({ name: 'editor' })
-import { onBeforeUnmount, ref, shallowRef, onMounted } from 'vue'
-import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
+<template>
+	<MdEditor v-if="props.editMode" v-model="text" @onUploadImg="onUploadImg" />
+	<MdPreview v-else :modelValue="text"></MdPreview>
+</template>
 
+<script setup>
+import { ref } from 'vue'
+import { MdEditor, MdPreview } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
+import api from '@/api'
 const props = defineProps({
-	/**
-	 * @default default
-	 * @options default, simple
-	 */
-	mode: {
-		type: String,
-		default: 'default'
-	},
-	/**
-	 * @default 请输入内容...
-	 */
-	valueHtml: {
+	text: {
 		type: String,
 		default: ''
 	},
-	editorStyle: {
-		type: Object,
-		default: {}
+	editMode: {
+		type: Boolean,
+		default: false
 	}
 })
-const editorRef = shallowRef()
-// 内容 HTML
-const valueHtml = ref(props.valueHtml)
-const mode = ref('default')
-const token = localStorage.getItem('vue-naivue-admin_auth')
-// 模拟 ajax 异步获取内容
-onMounted(() => {})
+const text = ref(props.text)
+const onUploadImg = async (files, callback) => {
+	const res = await Promise.all(
+		files.map((file) => {
+			return new Promise((rev, rej) => {
+				const form = new FormData()
+				form.append('file', file)
+				form.append('classify', 'editor')
+				api
+					.upload(form, {
+						headers: {
+							'Content-Type': 'multipart/form-data'
+						}
+					})
+					.then((res) => rev(res))
+					.catch((error) => rej(error))
+			})
+		})
+	)
 
-const toolbarConfig = {}
-const editorConfig = {
-	placeholder: '请输入内容...',
-	MENU_CONF: {
-		uploadImage: {
-			server: '/api/file/upload',
-			fieldName: 'file',
-			meta: {
-				classify: 'editor'
-			},
-			headers: {
-				Authorization: 'Bearer ' + JSON.parse(token).accessToken
-			}
-		}
-	}
+	callback(res.map((item) => item.data.url))
 }
-
-// 组件销毁时，也及时销毁编辑器
-onBeforeUnmount(() => {
-	const editor = editorRef.value
-	if (editor == null) return
-	editor.destroy()
-})
-
-const handleCreated = (editor) => {
-	editorRef.value = editor // 记录 editor 实例，重要！
-}
-const getValue = () => {
-	return editorRef.value.getHtml()
-	// 粘贴事件
+const getValue = (value) => {
+	return text.value ? text.value : ''
 }
 defineExpose({
 	getValue
 })
 </script>
-
-<template>
-	<div style="border: 1px solid #ccc">
-		<Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
-		<Editor
-			:style="props.editorStyle"
-			v-model="valueHtml"
-			:defaultConfig="editorConfig"
-			:mode="mode"
-			@onCreated="handleCreated"
-		/>
-	</div>
-</template>
-
-<style scoped></style>

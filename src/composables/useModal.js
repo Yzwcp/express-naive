@@ -13,7 +13,9 @@ export function useModal() {
 			return modalRef.value?.okLoading
 		},
 		set(v) {
-			modalRef.value.okLoading = v
+			if (modalRef.value) {
+				modalRef.value.okLoading = v
+			}
 		}
 	})
 	return [modalRef, okLoading]
