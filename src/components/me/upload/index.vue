@@ -22,27 +22,36 @@
 					刷新
 				</NButton>
 			</div>
-			<n-upload
-				class="mx-auto w-[75%] p-20 text-center"
-				:show-file-list="false"
-				accept=".png,.jpg,.jpeg"
-				multiple
-				list-type="image"
-				:action="uploadAction"
-				@before-upload="onBeforeUpload"
-				@finish="handleFinish"
-				:data="{
-					classify: classify
-				}"
-				:headers="{
-					Authorization: `Bearer ${authStore.accessToken}`
-				}"
-			>
-				<NButton type="primary">
-					<i class="i-material-symbols:upload mr-4 text-18" />
-					添加文件
-				</NButton>
-			</n-upload>
+			<div class="f-c-c">
+				<n-radio-group v-model:value="platform">
+					<n-radio-button
+						v-for="type in platformOptions"
+						:disabled="type.disabled"
+						:key="type.value"
+						:value="type.value"
+						:label="type.label"
+					/>
+				</n-radio-group>
+				<n-upload
+					class="mx-auto w-[75%] p-20 text-center"
+					:show-file-list="false"
+					accept=".png,.jpg,.jpeg"
+					multiple
+					list-type="image"
+					:action="uploadAction"
+					@before-upload="onBeforeUpload"
+					@finish="handleFinish"
+					:data="formData"
+					:headers="{
+						Authorization: `Bearer ${authStore.accessToken}`
+					}"
+				>
+					<NButton type="primary">
+						<i class="i-material-symbols:upload mr-4 text-18" />
+						添加文件
+					</NButton>
+				</n-upload>
+			</div>
 		</n-space>
 		<n-spin :show="loading">
 			<n-card class="mt-16 items-center min-h-625">
@@ -61,7 +70,7 @@
 								{{ item.originalName }}
 							</div>
 							<div class="h-90 f-c-c mt-16 cursor-pointer" @click="select(item)">
-								<n-image width="200" :src="mergeImageUrl(item.path)" />
+								<n-image width="200" :src="item.fullPath" />
 							</div>
 							<div class="mt-10 f-c-c gap-x-12" justify="space-evenly">
 								<div class="hidden group-hover:block">
@@ -96,7 +105,7 @@
 
 <script setup>
 import { mergeImageUrl } from '@/utils/index.js'
-
+import { v4 as uuidv4 } from 'uuid'
 defineOptions({ name: 'ImgUpload' })
 import { NButton } from 'naive-ui'
 import { useAuthStore } from '@/store/index.js'
@@ -106,20 +115,6 @@ const env = import.meta.env
 const authStore = useAuthStore()
 const emit = defineEmits(['onOk'])
 //获取环境变量
-const uploadAction = env.VITE_AXIOS_BASE_URL + '/sys/file/upload'
-const showModal = ref(false)
-const loading = ref(false)
-const typeValue = ref('image')
-const selectList = ref([])
-const selectIdList = computed(() => {
-	return selectList.value.map((item) => item.id)
-})
-const page = reactive({
-	pageNo: 1,
-	pageSize: 15,
-	total: 0
-})
-const imgList = ref([])
 const props = defineProps({
 	classify: {
 		type: String,
@@ -130,6 +125,41 @@ const props = defineProps({
 		default: false
 	}
 })
+const showModal = ref(false)
+const loading = ref(false)
+const typeValue = ref('image')
+const selectList = ref([])
+const direct = ref({})
+const platform = ref('local')
+const classify = ref(props.classify)
+const formData = ref({
+	classify: classify.value
+})
+const fileData = ref({})
+const uploadAction = computed(() => {
+	if (platform.value === 'local') {
+		formData.value = {
+			classify: classify.value
+		}
+		return `${env.VITE_AXIOS_BASE_URL}/sys/file/upload`
+	} else if (platform.value === 'aliyun') {
+		formData.value.policy = direct.value.policy
+		formData.value.OSSAccessKeyId = direct.value.accessid
+		formData.value.success_action_status = '200'
+		formData.value.signature = direct.value.signature
+		return direct.value.host
+	}
+})
+const selectIdList = computed(() => {
+	return selectList.value.map((item) => item.id)
+})
+const page = reactive({
+	pageNo: 1,
+	pageSize: 15,
+	total: 0
+})
+const imgList = ref([])
+
 const types = [
 	{ label: '图片', value: 'image' },
 	{ label: '视频', value: 'video' }
@@ -139,7 +169,17 @@ const classifyList = [
 	{ label: '其他', value: 'temp' },
 	{ label: '交易', value: 'trade' }
 ]
-const classify = ref(props.classify)
+const platformOptions = [
+	{ label: '本地', value: 'local' },
+	{ label: '阿里云', value: 'aliyun', disabled: env.VITE_OPEN_ALIOSS === '0' }
+]
+
+const getFileDirect = async () => {
+	if (env.VITE_OPEN_ALIOSS === '0') return
+	const { data } = await api.getFileDirect()
+	direct.value = data
+}
+
 const onPageChange = () => {
 	loadFileList()
 }
@@ -188,6 +228,8 @@ const loadFileList = async () => {
 }
 const open = () => {
 	loadFileList()
+	getFileDirect()
+
 	selectList.value = []
 	showModal.value = true
 }
@@ -196,16 +238,42 @@ function onBeforeUpload({ file }) {
 		$message.error('只能上传图片')
 		return false
 	}
+	const uuidName = uuidv4(file.name).replaceAll('-', '')
+	formData.value.name = file.name
+	formData.value.key = direct.value.key + '/' + uuidName
+	fileData.value = file
+	fileData.value.uuidName = uuidName
 	return true
 }
-function handleFinish() {
+async function handleFinish() {
+	if (platform.value === 'aliyun') {
+		const fullPath = direct.value.host + '/' + formData.value.key
+		const path = '/' + formData.value.key
+		const saveType = 'aliyun'
+		const originalName = fileData.value.name
+		const fileType = fileData.value.file.type
+		const fileName = fileData.value.uuidName
+		const size = fileData.value.file.size
+		const data = {
+			userId: 1,
+			classify: classify.value,
+			fileType,
+			fileName,
+			size,
+			saveType,
+			originalName,
+			path,
+			fullPath,
+			sizeString: (size / (1024 * 1024)).toFixed(2) + 'MB'
+		}
+		await api.crateFile(data)
+	}
 	loadFileList()
 }
 async function handleUpload({ file, data, headers, withCredentials, action, onFinish, onError, onProgress }) {
 	if (!file || !file.type) {
 		$message.error('请选择文件')
 	}
-	console.log(file)
 	// 模拟上传
 	$message.loading('上传中...')
 	setTimeout(() => {

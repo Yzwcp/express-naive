@@ -23,5 +23,7 @@ export default {
 	validateMenuPath: (path) => request.get(`/sys/permission/menu/validate?path=${path}`),
 	//获取文件列表
 	getFileList: (params) => request.get('/sys/file', { params }),
+	getFileDirect: (params) => request.get('/sys//file/direct', { params }),
+	crateFile: (data) => request.post('/sys/file', data),
 	removeFile: (id) => request.delete('/sys/file/' + id, {})
 }

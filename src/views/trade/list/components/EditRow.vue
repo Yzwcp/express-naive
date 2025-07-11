@@ -103,8 +103,8 @@ const openSelect = () => {
 		</template>
 		<template v-else-if="props.type === 'time'">
 			<div @mouseleave="mouseleave">
-				<div class="w-full cursor-pointer" v-if="!isEdit">
-					<span @click="openSelect" v-if="inputValue">{{ dayjs(inputValue).format('YYYY/MM/DD HH:mm') }}</span>
+				<div @click="openSelect" class="w-full cursor-pointer" v-if="!isEdit">
+					<span v-if="inputValue">{{ dayjs(inputValue).format('YYYY/MM/DD HH:mm') }}</span>
 					<span v-else class="color-gray-400">请选择时间</span>
 				</div>
 				<n-date-picker
