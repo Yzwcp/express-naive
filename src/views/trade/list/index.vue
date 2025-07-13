@@ -31,7 +31,7 @@
 					v-model:value="queryItems.time"
 					label-field="date"
 					value-field="value"
-					:options="[{ date: '全部', value: 'all' }, ...allTimestampList]"
+					:options="[{ date: '全部', value: '' }, ...allTimestampList]"
 				/>
 				<n-radio-group
 					@updateValue="onWeekChange"
@@ -47,7 +47,7 @@
 				class="w-120"
 				@updateValue="onPlatformChange"
 				v-model:value="queryItems.platform"
-				:options="[{ label: '全部', value: 'all' }, ...dict[dictKey.TRADE_PLATFORM]]"
+				:options="[{ label: '全部', value: '' }, ...dict[dictKey.TRADE_PLATFORM]]"
 			/>
 			<div class="f-c-c gap-x-10 text-18">
 				<div class="f-c-c" title="盈利">
@@ -75,7 +75,7 @@
 			</div>
 		</MeCrud>
 		<n-drawer
-			default-width="50%"
+			default-width="80%"
 			v-model:show="drawerShow"
 			@afterLeave="editMode = false"
 			:placement="'right'"
@@ -144,94 +144,13 @@
 					<Editor
 						:editorStyle="{ height: 'calc(100vh - 250px)' }"
 						ref="editRef"
-						v-if="editMode"
-						:value-html="rowData.content"
+						:text="rowData.content"
+						:editMode="editMode"
 					></Editor>
-					<div v-else v-html="rowData.content"></div>
 				</div>
 			</n-drawer-content>
 		</n-drawer>
-		<MeModal ref="modalRef" class="w-1/3">
-			<n-form
-				ref="modalFormRef"
-				label-placement="left"
-				label-align="left"
-				:label-width="80"
-				:model="modalForm"
-				:disabled="modalAction === 'view'"
-			>
-				<n-form-item
-					label="商品名称"
-					path="name"
-					:rule="{
-						required: true,
-						message: '请输入商品名称',
-						trigger: ['input', 'blur']
-					}"
-				>
-					<n-input v-model:value="modalForm.name" />
-				</n-form-item>
-				<n-form-item
-					label="商品描述"
-					path="description"
-					:rule="{
-						required: true,
-						message: '请输入商品名称',
-						trigger: ['input', 'blur']
-					}"
-				>
-					<n-input type="textarea" v-model:value="modalForm.description" />
-				</n-form-item>
-				<n-form-item
-					label="商品服务"
-					path="service"
-					:rule="{
-						required: true,
-						message: '请输入服务',
-						trigger: ['input', 'blur']
-					}"
-				>
-					<n-input placeholder="7天无理由退货" v-model:value="modalForm.service" />
-				</n-form-item>
-				<n-form-item
-					label="商品图片"
-					path="files"
-					:rule="{
-						required: true,
-						message: '请上传商品图片',
-						trigger: ['blur', 'change', 'blur'],
-						validator: (rule, value, callback) => {
-							if (!value || !value.length) {
-								callback(new Error('请上传商品图片'))
-							}
-						}
-					}"
-				>
-					<div class="flex-col w-full">
-						<n-button class="w-50 mb-4" round @click="imageSpaceRef.open()"
-							><i class="i-material-symbols-add"></i>
-						</n-button>
-						<div v-if="modalForm.files?.length" class="flex gap-x-4 w-full card-border">
-							<div v-for="(item, index) in modalForm.files" :key="index" class="text-center flex-col">
-								<n-image :src="item.fullPath" class="m-4 rounded-10 w-100 h-100" width="100" height="100" />
-								<div>
-									<i @click="modalForm.files.splice(index, 1)" class="i-material-symbols:delete cursor-pointer"></i>
-								</div>
-							</div>
-						</div>
-					</div>
-				</n-form-item>
-				<n-form-item label="排序" path="order">
-					<n-input-number v-model:value="modalForm.order" :min="1" />
-				</n-form-item>
-				<n-form-item v-if="modalAction === 'add'" label="状态" path="enable">
-					<NSwitch v-model:value="modalForm.enable">
-						<template #checked> 启用 </template>
-						<template #unchecked> 停用 </template>
-					</NSwitch>
-				</n-form-item>
-			</n-form>
-		</MeModal>
+		<MeModal></MeModal>
 		<MeUpload @on-ok="getImage" ref="imageSpaceRef"></MeUpload>
 	</CommonPage>
 </template>
@@ -344,7 +263,7 @@ const getTodayValue = () => {
 }
 const queryItems = ref({
 	time: getTodayValue(),
-	platform: 'all'
+	platform: ''
 })
 const incomeCol = reactive({
 	title: '收益',
@@ -382,9 +301,6 @@ const onWeekChange = (value) => {
 }
 const onPlatformChange = (value) => {
 	queryItems.value.platform = value
-	if (value === '3') {
-		queryItems.value.time = 'all'
-	}
 	$table.value?.handleSearch()
 }
 const onDrawer = (row) => {
@@ -461,7 +377,8 @@ const columns = [
 			return h(EditRow, {
 				value: row.profit ? String(row.profit) : '',
 				onChangeValue: (v) => onEditRow(row, Number(v), 'profit'),
-				type: 'input'
+				type: 'input',
+				unit: '%'
 			})
 		}
 	},
@@ -474,7 +391,8 @@ const columns = [
 			return h(EditRow, {
 				value: row.risk ? String(row.risk) : '',
 				onChangeValue: (v) => onEditRow(row, Number(v), 'risk'),
-				type: 'input'
+				type: 'input',
+				unit: '%'
 			})
 		}
 	},
@@ -619,7 +537,7 @@ async function handleEnable(row) {
 	}
 }
 function onSave(data) {
-	if (editRef.value) {
+	if (editRef?.value) {
 		data.content = editRef.value.getValue()
 	}
 	return handleSave({

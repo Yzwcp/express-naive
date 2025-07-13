@@ -17,6 +17,7 @@ export const useAppStore = defineStore('app', {
 		isDark: useDark(),
 		layout: defaultLayout,
 		primaryColor: defaultPrimaryColor,
+		aliyunOssDirect: {},
 		naiveThemeOverrides
 	}),
 	actions: {
@@ -31,6 +32,9 @@ export const useAppStore = defineStore('app', {
 		},
 		setLayout(v) {
 			this.layout = v
+		},
+		setAliyunOssDirect(v) {
+			this.aliyunOssDirect = v
 		},
 		setPrimaryColor(color) {
 			this.primaryColor = color

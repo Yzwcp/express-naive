@@ -34,7 +34,8 @@ import { useAppStore, useTabStore } from '@/store'
 import { darkTheme, dateZhCN, zhCN } from 'naive-ui'
 import { layoutSettingVisible } from './settings'
 import dayjs from 'dayjs'
-import 'dayjs/locale/zh-cn' // 加载中文语言包
+import 'dayjs/locale/zh-cn'
+import api from '@/api/index.js'
 dayjs.locale('zh-cn') // 设置语言为中文
 const layouts = new Map()
 function getLayout(name) {
@@ -57,6 +58,11 @@ const tabStore = useTabStore()
 const keepAliveNames = computed(() => {
 	return tabStore.tabs.filter((item) => item.keepAlive).map((item) => item.name)
 })
+if (import.meta.env.VITE_OPEN_ALIOSS === '1') {
+	api.getFileDirect().then((res) => {
+		appStore.setAliyunOssDirect(res.data)
+	})
+}
 
 watchEffect(() => {
 	appStore.setThemeColor(appStore.primaryColor, appStore.isDark)

@@ -85,6 +85,10 @@ export const dict = {
 		{
 			label: 'FXREPLAY',
 			value: '3'
+		},
+		{
+			label: 'FUNDEDNEXT',
+			value: '4'
 		}
 	],
 	[dictKey.TRADE_ORDER_STATUS]: [
@@ -123,6 +127,10 @@ export const dict = {
 		{
 			label: 'GC',
 			value: '3'
+		},
+		{
+			label: 'EURUSD',
+			value: '4'
 		}
 	],
 	[dictKey.WEEK_RANG]: [

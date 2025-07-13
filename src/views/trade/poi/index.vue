@@ -96,7 +96,7 @@ onMounted(() => {
 						</n-button>
 						<div v-if="modalForm.files?.length" class="flex gap-x-4 w-full card-border">
 							<div v-for="(item, index) in modalForm.files" :key="index" class="text-center flex-col">
-								<n-image :src="mergeImageUrl(item.path)" class="m-4 rounded-10 w-100 h-100" width="100" height="100" />
+								<n-image :src="item.fullPath" class="m-4 rounded-10 w-100 h-100" width="100" height="100" />
 								<div>
 									<i @click="modalForm.files.splice(index, 1)" class="i-material-symbols:delete cursor-pointer"></i>
 								</div>
@@ -127,7 +127,7 @@ onMounted(() => {
 					<n-image-group>
 						<div class="flex items-center gap-x-4">
 							<div class="border-0.125rem w-50 h-50" v-for="image in item.files" :key="item.id">
-								<n-image :width="50" :height="50" :src="mergeImageUrl(image.path)" />
+								<n-image :width="50" :height="50" :src="image.fullPath" />
 							</div>
 						</div>
 					</n-image-group>
