@@ -68,7 +68,6 @@ const mouseleave = () => {
 const openSelect = () => {
 	isEdit.value = true
 	nextTick(() => {
-		console.log(selectRef.value)
 		selectRef.value.focus()
 	})
 }

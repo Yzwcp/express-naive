@@ -76,20 +76,7 @@ onMounted(() => {
 				>
 					<n-input type="textarea" v-model:value="modalForm.content" />
 				</n-form-item>
-				<n-form-item
-					label="图片"
-					path="files"
-					:rule="{
-						required: true,
-						message: '请上传图片',
-						trigger: ['blur', 'change', 'blur'],
-						validator: (rule, value, callback) => {
-							if (!value || !value.length) {
-								callback(new Error('请上传图片'))
-							}
-						}
-					}"
-				>
+				<n-form-item label="图片" path="files">
 					<div class="flex-col w-full">
 						<n-button class="w-50 mb-4" round @click="imageSpaceRef.open()"
 							><i class="i-material-symbols-add"></i>
@@ -110,52 +97,63 @@ onMounted(() => {
 			</n-form>
 		</MeModal>
 		<MeUpload @on-ok="getImage" :selectMultiple="true" ref="imageSpaceRef"></MeUpload>
-		<div class="flex flex-wrap gap-30px">
-			<n-card class="w-32%" :title="item.name" v-for="item in tableData" :key="item.id">
-				<template #header-extra>
-					<n-space>
-						<NButton circle @click="handleDelete(item.id)" size="small">
-							<i title="删除" class="i-material-symbols:delete cursor-pointer" />
-						</NButton>
-						<NButton circle @click="handleEdit(cloneDeep(item))" size="small">
-							<i title="编辑" class="i-material-symbols:edit cursor-pointer" />
-						</NButton>
-					</n-space>
-				</template>
-				{{ item.content }}
-				<template #footer>
-					<n-image-group>
-						<div class="flex items-center gap-x-4">
-							<div class="border-0.125rem w-50 h-50" v-for="image in item.files" :key="item.id">
-								<n-image :width="50" :height="50" :src="image.fullPath" />
+		<div class="flex justify-between gap-30">
+			<div class="flex flex-wrap justify-between gap-y-30">
+				<n-card class="w-48%" :title="item.name" v-for="item in tableData" :key="item.id">
+					<template #header-extra>
+						<n-space>
+							<NButton circle @click="handleDelete(item.id)" size="small">
+								<i title="删除" class="i-material-symbols:delete cursor-pointer" />
+							</NButton>
+							<NButton circle @click="handleEdit(cloneDeep(item))" size="small">
+								<i title="编辑" class="i-material-symbols:edit cursor-pointer" />
+							</NButton>
+						</n-space>
+					</template>
+					{{ item.content }}
+					<template #footer>
+						<n-image-group>
+							<div class="flex items-center gap-x-4">
+								<div class="border-0.125rem w-50 h-50" v-for="image in item.files" :key="item.id">
+									<n-image :width="50" :height="50" :src="image.fullPath" />
+								</div>
+							</div>
+						</n-image-group>
+					</template>
+					<template #action>
+						<div class="f-c-c gap-x-10 text-18">
+							<div class="f-c-c" title="盈亏比">
+								<i class="i-material-symbols:analytics-outline-sharp cursor-pointer" />
+								<span class="text-12">{{ item.avgRRR }}R</span>
+							</div>
+							<div class="color-gray-400">·</div>
+							<div class="f-c-c" title="胜率">
+								<i class="i-material-symbols:wine-bar-rounded cursor-pointer" />
+								<span class="text-12"> {{ item.rating }}%</span>
+							</div>
+							<div class="color-gray-400">·</div>
+							<div class="f-c-c" title="下单总数">
+								<i class="i-material-symbols:nest-secure-alarm-outline cursor-pointer" />
+								<span class="text-12"> {{ item.total }}</span>
 							</div>
 						</div>
-					</n-image-group>
-				</template>
-				<template #action>
-					<div class="f-c-c gap-x-10 text-18">
-						<div class="f-c-c" title="盈亏比">
-							<i class="i-material-symbols:analytics-outline-sharp cursor-pointer" />
-							<span class="text-12">{{ item.avgRRR }}R</span>
-						</div>
-						<div class="color-gray-400">·</div>
-						<div class="f-c-c" title="胜率">
-							<i class="i-material-symbols:wine-bar-rounded cursor-pointer" />
-							<span class="text-12"> {{ item.rating }}%</span>
-						</div>
-						<div class="color-gray-400">·</div>
-						<div class="f-c-c" title="下单总数">
-							<i class="i-material-symbols:nest-secure-alarm-outline cursor-pointer" />
-							<span class="text-12"> {{ item.total }}</span>
-						</div>
-					</div>
-				</template>
-			</n-card>
+					</template>
+				</n-card>
+			</div>
 		</div>
 	</CommonPage>
 </template>
 
 <style scoped>
+.i-box {
+	> div {
+		margin-top: 10px;
+	}
+}
+.i-title {
+	width: 60px;
+	display: inline-block;
+}
 :deep(.n-card__action) {
 	padding: 10px;
 }

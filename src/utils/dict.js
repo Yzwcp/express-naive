@@ -107,11 +107,11 @@ export const dict = {
 	],
 	[dictKey.TRADE_ORDER_DIRECTION]: [
 		{
-			label: '做多',
+			label: '多',
 			value: '1'
 		},
 		{
-			label: '做空',
+			label: '空',
 			value: '2'
 		}
 	],

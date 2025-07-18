@@ -22,6 +22,7 @@
 			:columns="columns"
 			:get-data="loadTableData"
 			@update:queryItems="onQueryItemsChange"
+			:pageSize="100"
 		>
 			<n-input-group>
 				<n-select
@@ -194,15 +195,17 @@ const rowData = ref({})
 const poiList = ref([])
 const editMode = ref(false)
 const templateRow = ref({
-	code: '1',
+	code: '4',
 	killZone: '1',
 	orderLabel: '',
-	orderTime: undefined,
-	profit: '',
+	orderTime: new Date().getTime(),
 	risk: '',
-	platform: '3',
+	platform: '4',
 	remark: undefined,
+	income: '',
 	status: '1',
+	//方向
+	direction: '1',
 	enable: true,
 	tradingModels: []
 })
@@ -230,7 +233,7 @@ const analysis = computed(() => {
 	let tableData = $table?.value?.tableData
 	if (tableData && tableData.length > 0) {
 		tableData.forEach((item) => {
-			if (item.income) income += Number(item.income)
+			if (item.income) income = Decimal(Number(income)).add(Number(item.income))
 			if (item.status === '1') win += 1
 			if (item.status === '3') excluded += 1
 		})
@@ -273,7 +276,7 @@ const incomeCol = reactive({
 	align: 'center',
 	render(row) {
 		return h(EditRow, {
-			value: row.income ? String(row.income) : '',
+			value: String(row.income) ? String(row.income) : '',
 			onChangeValue: (v) => onEditRow(row, Number(v), 'income'),
 			type: 'input',
 			unit: '$',
@@ -322,10 +325,30 @@ const loadTableData = (params) => {
 		return res
 	})
 }
+function getTimeSlotValue(timestamp) {
+	const time = dayjs(timestamp)
+	const hour = time.hour()
+	const minute = time.minute()
+	const totalMinutes = hour * 60 + minute
+
+	// 定义时间段
+	if (totalMinutes >= 20 * 60 + 30 && totalMinutes <= 23 * 60) {
+		return '1' // 20:30-23:00
+	} else if (totalMinutes >= 14 * 60 && totalMinutes <= 17 * 60) {
+		return '2' // 14:00-17:00
+	} else if (totalMinutes >= 7 * 60 && totalMinutes <= 12 * 60) {
+		return '3' // 7:00-12:00
+	} else {
+		return '1' // 其他时间段
+	}
+}
+
 const onEditRow = (row, v, key) => {
 	row.editable = true
 	row[key] = v
-	console.log(v, key)
+	if (key === 'orderTime') {
+		row.killZone = getTimeSlotValue(v)
+	}
 }
 
 const { modalRef, modalFormRef, modalForm, modalAction, handleAdd, handleDelete, handleOpen, handleEdit, handleSave } =
@@ -369,16 +392,16 @@ const columns = [
 	},
 
 	{
-		title: '盈利',
+		title: '方向',
 		align: 'center',
-		key: 'profit',
+		key: 'direction',
 		width: 100,
 		render(row) {
 			return h(EditRow, {
-				value: row.profit ? String(row.profit) : '',
-				onChangeValue: (v) => onEditRow(row, Number(v), 'profit'),
-				type: 'input',
-				unit: '%'
+				value: row.direction ? String(row.direction) : '',
+				onChangeValue: (v) => onEditRow(row, Number(v), 'direction'),
+				type: 'select',
+				dictKey: dictKey.TRADE_ORDER_DIRECTION
 			})
 		}
 	},
@@ -392,7 +415,7 @@ const columns = [
 				value: row.risk ? String(row.risk) : '',
 				onChangeValue: (v) => onEditRow(row, Number(v), 'risk'),
 				type: 'input',
-				unit: '%'
+				unit: '$'
 			})
 		}
 	},

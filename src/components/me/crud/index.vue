@@ -88,6 +88,10 @@ const props = defineProps({
 		type: Array,
 		required: true
 	},
+	pageSize: {
+		type: Number,
+		default: 10
+	},
 	/** queryBar中的参数 */
 	queryItems: {
 		type: Object,
@@ -118,7 +122,7 @@ const initQuery = { ...props.queryItems }
 const tableData = ref([])
 const pagination = reactive({
 	page: 1,
-	pageSize: 10,
+	pageSize: props.pageSize ?? 10,
 	prefix({ itemCount }) {
 		return `共 ${itemCount} 条数据`
 	}
