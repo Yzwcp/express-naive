@@ -9,12 +9,12 @@
 import { request } from '@/utils'
 
 export default {
-	create: (data) => request.post('/sys/user', data),
-	read: (params = {}) => request.get('/sys/user', { params }),
-	setRole: (data) => request.patch(`/sys/user/setRoles`, data),
-	update: (id, data) => request.put(`/sys/user/${id}`, data),
-	delete: (id) => request.delete(`/sys/user/${id}`),
-	resetPwd: (id, data) => request.patch(`/sys/user/password/${id}`, data),
+	create: (data) => request.post('/sys/user/create', data),
+	read: (params = {}) => request.get('/sys/user/list', { params }),
+	setRole: (data) => request.post(`/sys/role/setRoles`, data),
+	update: (id, data) => request.post(`/sys/user/${id}`, data),
+	delete: (id) => request.post(`/sys/user/remove`, { id: id }),
+	resetPwd: (id, data) => request.post(`/sys/user/restPassword`, data),
 
-	getAllRoles: () => request.get('/sys/role?enable=1')
+	getAllRoles: () => request.get('/sys/role/list?enable=1')
 }

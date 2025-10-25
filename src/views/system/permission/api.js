@@ -11,9 +11,9 @@ import axios from 'axios'
 
 export default {
 	getMenuTree: () => request.get('/sys/permission/getTreeByMenuType'),
-	getButtons: ({ parentId }) => request.get(`/sys/permission/button/${parentId}`),
+	getButtons: ({ parentId }) => request.get(`/sys/permission/button`, { params: { parentId } }),
 	getComponents: () => axios.get(`${import.meta.env.VITE_PUBLIC_PATH}components.json`),
-	addPermission: (data) => request.post('/sys/permission', data),
-	savePermission: (id, data) => request.put(`/sys/permission/${id}`, data),
-	deletePermission: (id) => request.delete(`/sys/permission/${id}`)
+	addPermission: (data) => request.post('/sys/permission/create', data),
+	savePermission: (id, data) => request.post(`/sys/permission/edit`, { id: id, ...data }),
+	deletePermission: (id) => request.post(`/sys/permission/remove`, { id: id })
 }

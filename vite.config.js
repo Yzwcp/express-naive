@@ -55,10 +55,10 @@ export default defineConfig(({ mode }) => {
 			port: 3200,
 			open: false,
 			proxy: {
-				'/api': {
+				'/proxy': {
 					target: VITE_PROXY_TARGET,
 					changeOrigin: true,
-					rewrite: (path) => path.replace(/^\/api/, ''),
+					rewrite: (path) => path.replace(/^\/proxy/, ''),
 
 					secure: false
 					// configure: (proxy, options) => {

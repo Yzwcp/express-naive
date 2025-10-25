@@ -17,7 +17,7 @@
 
 		<MeCrud ref="$table" v-model:query-items="queryItems" :scroll-x="1200" :columns="columns" :get-data="api.read">
 			<MeQueryItem label="用户名" :label-width="50">
-				<n-input v-model:value="queryItems.username" type="text" placeholder="请输入用户名" clearable />
+				<n-input v-model:value="queryItems.keyword" type="text" placeholder="请输入用户名" clearable />
 			</MeQueryItem>
 
 			<MeQueryItem label="性别" :label-width="50">

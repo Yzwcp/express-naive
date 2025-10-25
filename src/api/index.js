@@ -10,7 +10,7 @@ import { request } from '@/utils'
 
 export default {
 	// 获取用户信息
-	getUser: () => request.get('/user/detail'),
+	getUser: () => request.get('/sys/user/detail'),
 	// 刷新token
 	refreshToken: () => request.get('/auth/refresh/token'),
 	// 登出
@@ -22,8 +22,8 @@ export default {
 	// 验证菜单路径
 	validateMenuPath: (path) => request.get(`/sys/permission/menu/validate?path=${path}`),
 	//获取文件列表
-	getFileList: (params) => request.get('/sys/file', { params }),
-	getFileDirect: (params) => request.get('/sys//file/direct', { params }),
-	crateFile: (data) => request.post('/sys/file', data),
+	getFileList: (params) => request.get('/sys/file/list', { params }),
+	getFileDirect: (params) => request.get('/sys/file/direct', { params }),
+	crateFile: (data) => request.post('/sys/file/create', data),
 	removeFile: (id) => request.delete('/sys/file/' + id, {})
 }

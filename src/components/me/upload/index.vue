@@ -69,7 +69,7 @@
 							>
 								{{ item.originalName }}
 							</div>
-							<div class="h-90 f-c-c mt-16 cursor-pointer" @click="select(item)">
+							<div class="h-90 f-c-c mt-16 cursor-pointer" @click.self="select(item)">
 								<n-image width="200" :src="item.fullPath" />
 							</div>
 							<div class="mt-10 f-c-c gap-x-12" justify="space-evenly">
